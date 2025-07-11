@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 
 class PostController extends Controller
 {
@@ -12,7 +13,15 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::all();
+        $cached = Redis::get("post:all");
+
+        if ($cached) {
+            $posts = json_decode($cached);
+        } else {
+            $posts = \App\Models\Post::all();
+            Redis::set("post:all", $posts->toJson());
+
+        }
         return view("posts.index", compact("posts"));
     }
 
@@ -52,8 +61,9 @@ class PostController extends Controller
      */
     public function show(string $id)
     {
-        $post = Post::find($id);
-        return view('posts.show', compact('post'));
+        $views = Redis::incr("post:{$id}:views");
+        $post = Post::with('comments')->findOrFail($id);
+        return view('posts.show', compact('post', 'views'));
     }
 
     /*

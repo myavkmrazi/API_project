@@ -11,9 +11,13 @@ Route::get('/', function () {
 });
 
 Route::resource('posts', App\Http\Controllers\PostController::class);
-Route::resource('comments', CommentController::class);
 Route::get('/upload', function () {
     return view('upload');
 });
 Route::post('/upload', [FileUploadController::class, 'store'])->name('upload.file');
 Route::get('/posts/{id}/comments', [CommentController::class, 'postComment'])->name('posts.comments');
+Route::get('/comments/{id}/int', [CommentController::class, 'commentInt'])->name('comments.int');
+Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
+require __DIR__ . '/admin.php';
+
+

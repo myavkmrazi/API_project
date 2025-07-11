@@ -1,77 +1,43 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Comment;
-use App\Models\Post;
-use Illuminate\Support\Facades\Redis;
-class CommentController extends Controller
+
+class PostController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-
-
-
-
     public function index()
     {
-
+        //
     }
-
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request)
+    public function create()
     {
-
+        //
     }
-
-
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'post_id' => 'required|exists:posts,id',
-            'text' => 'required|string|max:1000',
-
-        ]);
-
-        Comment::create([
-            'post_id' => $request->post_id,
-            'text' => $request->text,
-            'author' => 'Гость',
-        ]);
-        return redirect()->back();
+        //
     }
-
-    public function postComment(string $id)
-    {
-
-    }
-
-    public function commentInt(string $id)
-    {
-
-    }
-
-
-
 
     /**
      * Display the specified resource.
      */
-    // public function show(string $id)
-    // {
-
-    // }
-
-
+    public function show(string $id)
+    {
+        //
+    }
 
     /**
      * Show the form for editing the specified resource.

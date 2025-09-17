@@ -13,17 +13,10 @@ class PostController extends Controller
      */
     public function index()
     {
-        $cached = Redis::get("post:all");
-
-        if ($cached) {
-            $posts = json_decode($cached);
-        } else {
-            $posts = \App\Models\Post::all();
-            Redis::set("post:all", $posts->toJson());
-
-        }
+        $posts = Post::all(); // напрямую из БД, без Redis
         return view("posts.index", compact("posts"));
     }
+
 
     /*
      * Show the form for creating a new resource.
@@ -47,14 +40,18 @@ class PostController extends Controller
         $data = $request->all();
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('posts', 'public'); // сохраним в папку public/posts
+            $path = $request->file('image')->store('posts', 'public');
             $data['image'] = $path;
         }
 
         Post::create($data);
 
+        // Очистка кэша после создания
+        Redis::del("post:all");
+
         return redirect()->route('posts.index');
     }
+
 
     /*
      * Display the specified resource.
@@ -91,22 +88,38 @@ class PostController extends Controller
         $data = $request->all();
 
         if ($request->hasFile('image')) {
+            // сохраняем новый файл
             $path = $request->file('image')->store('posts', 'public');
             $data['image'] = $path;
+        } else {
+            // если файл не загружен, оставляем старую картинку
+            $data['image'] = $post->image;
         }
 
         $post->update($data);
 
+        // очищаем кэш Redis, если используешь
+        Redis::del("post:all");
+
         return redirect()->route('posts.index');
     }
-
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        Post::find($id)->delete();
-        return redirect()->route('posts.index');
+        $post = Post::find($id);
+
+        if ($post) {
+            $post->delete();
+            Redis::del("post:all"); // вот это оставляем
+            return redirect()->route('posts.index')->with('success', 'Пост удалён!');
+        }
+
+        return redirect()->route('posts.index')->with('error', 'Пост не найден!');
     }
+
+
+
 }
